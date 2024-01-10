@@ -70,13 +70,28 @@ router.post("/login", async (req, res) => {
     return res.redirect("/login");
   }
 
-  res.redirect("/admin");
+  req.session.user = {
+    id: user._id,
+    email: user.email,
+  };
+  req.session.isAuthenticated = true;
+  req.session.save(() => {
+    res.redirect("/admin");
+  })
+
 });
 
 router.get("/admin", (req, res) => {
+  if (!req.session.isAuthenticated) {
+    return res.status(401).render('401')
+  }
   res.render("admin");
 });
 
-router.post("/logout", (req, res) => {});
+router.post("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/");
+  });
+});
 
 module.exports = router;
